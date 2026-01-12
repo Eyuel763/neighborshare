@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "968434106434",
+    "project_id": "neighborshare-374b4",
+    "storage_bucket": "neighborshare-374b4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:968434106434:android:5bbbb8027995a2a463addb",
+        "android_client_info": {
+          "package_name": "com.example.neighbor_share"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "968434106434-5t0e3s1u7ntp9rdh5cajguji5dahvi71.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.neighbor_share",
+            "certificate_hash": "35e8f272c011e55274a10131026ac6982254f69c"
+          }
+        },
+        {
+          "client_id": "968434106434-u93ia5ktcl7cpfhp108vh9p8dk61q49l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC5nC92Ohnz77UTAknS2X0yv45SFLiAGR4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "968434106434-u93ia5ktcl7cpfhp108vh9p8dk61q49l.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "968434106434-pnfubimlrfhm55snat805932cg0q6tn9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.neighborShare"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:968434106434:android:b1e2c36059c4913163addb",
+        "android_client_info": {
+          "package_name": "com.example.neighborshare_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "968434106434-u93ia5ktcl7cpfhp108vh9p8dk61q49l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC5nC92Ohnz77UTAknS2X0yv45SFLiAGR4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "968434106434-u93ia5ktcl7cpfhp108vh9p8dk61q49l.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "968434106434-pnfubimlrfhm55snat805932cg0q6tn9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.neighborShare"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
