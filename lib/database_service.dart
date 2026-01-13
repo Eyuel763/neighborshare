@@ -1,22 +1,60 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'user_model.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'listing_model.dart';
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class DatabaseService {
-  final CollectionReference usersCollection = 
-      FirebaseFirestore.instance.collection('users');
+  final CollectionReference usersCollection = FirebaseFirestore.instance
+      .collection('users');
+  final CollectionReference listingsCollection = FirebaseFirestore.instance
+      .collection('listings');
 
   Future<void> updateUserData(UserModel user) async {
-  return await usersCollection.doc(user.uid).set(
-    user.toFirestore(), 
-    SetOptions(merge: true), 
-  );
+    return await usersCollection
+        .doc(user.uid)
+        .set(user.toFirestore(), SetOptions(merge: true));
+  }
+
+  Stream<UserModel> userDocumentStream(String uid) {
+    return usersCollection.doc(uid).snapshots().map((doc) {
+      return UserModel.fromFirestore(doc.data() as Map<String, dynamic>);
+    });
+  }
+
+  Future<void> addListing(ListingModel listing) async {
+    try {
+      await listingsCollection.add(listing.toFirestore());
+    } catch (e) {
+      print("Error adding listing: $e");
+      rethrow;
+    }
+  }
+
+  Future<String?> uploadListingImage(File imageFile, String listingId) async {
+  try {
+    // Create a reference to the location in Firebase Storage
+    Reference ref = FirebaseStorage.instance
+        .ref()
+        .child('listing_images')
+        .child('$listingId.jpg');
+
+    // Upload the file
+    UploadTask uploadTask = ref.putFile(imageFile);
+    TaskSnapshot snapshot = await uploadTask;
+
+    // Get the download URL
+    return await snapshot.ref.getDownloadURL();
+  } catch (e) {
+    print('Error uploading image: $e');
+    return null;
+  }
 }
 
   Future<bool> isUserProfileComplete(String uid) async {
     try {
       DocumentSnapshot doc = await usersCollection.doc(uid).get();
-      
+
       if (!doc.exists) {
         print('Profile Document not found for $uid.');
         return false;
@@ -25,27 +63,38 @@ class DatabaseService {
       final city = data['city'] as String?;
       final subcity = data['subcity'] as String?;
 
-      final isLocationSet = city != null && 
-                            city.isNotEmpty &&
-                            subcity != null &&
-                            subcity.isNotEmpty;
+      final isLocationSet =
+          city != null &&
+          city.isNotEmpty &&
+          subcity != null &&
+          subcity.isNotEmpty;
       if (!isLocationSet) {
-          print('Profile incomplete: City or Subcity is missing.');
+        print('Profile incomplete: City or Subcity is missing.');
       } else {
-          print('Profile complete. Navigating to Home.');
+        print('Profile complete. Navigating to Home.');
       }
 
       return isLocationSet;
-
     } catch (e) {
       print('Error checking profile completion: $e');
-      return false; 
+      return false;
     }
   }
 
-  Stream<UserModel> userDocumentStream(String uid) {
-    return usersCollection.doc(uid).snapshots().map((doc) {
-      return UserModel.fromFirestore(doc.data() as Map<String, dynamic>);
-    });
-  }
+  Stream<List<ListingModel>> getNearbyListings(String city, String subcity) {
+  return listingsCollection
+      .where('city', isEqualTo: city)
+      .where('subcity', isEqualTo: subcity)
+      .orderBy('createdAt', descending: true)
+      .snapshots()
+      .map((snapshot) {
+    return snapshot.docs.map((doc) {
+      return ListingModel.fromFirestore(
+        doc.id,
+        doc.data() as Map<String, dynamic>,
+      );
+    }).toList();
+  });
+}
+  
 }
