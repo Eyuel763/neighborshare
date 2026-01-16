@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'database_service.dart';
-import 'user_model.dart';
-import 'login_screen.dart';
-import 'profile_setup_screen.dart';
-import 'home_screen.dart';
+import 'package:neighbor_share/core/main_navigation.dart';
+import '../services/database_service.dart';
+import '../models/user_model.dart';
+import '../screens/login_screen.dart';
+import '../screens/profile_setup_screen.dart';
+import '../screens/splash_screen.dart';
+
 
 class AuthGuard extends StatelessWidget {
   const AuthGuard({super.key});
@@ -14,19 +16,16 @@ class AuthGuard extends StatelessWidget {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, authSnapshot) {
-        // 1. Connection loading
         if (authSnapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          return const SplashScreen();
         }
 
         final User? user = authSnapshot.data;
 
-        // 2. User is NOT logged in
         if (user == null) {
           return const LoginScreen();
         }
 
-        // 3. User IS logged in - Now listen to their Firestore document reactively
         return StreamBuilder<UserModel>(
           stream: DatabaseService().userDocumentStream(user.uid),
           builder: (context, userSnapshot) {
@@ -40,14 +39,13 @@ class AuthGuard extends StatelessWidget {
 
             final userModel = userSnapshot.data!;
             
-            // Check if profile is complete
             bool isComplete = userModel.city != null && 
                              userModel.city!.isNotEmpty &&
                              userModel.subcity != null &&
                              userModel.subcity!.isNotEmpty;
 
             if (isComplete) {
-              return HomeScreen();
+              return const MainNavigation();
             } else {
               return const ProfileSetupScreen();
             }

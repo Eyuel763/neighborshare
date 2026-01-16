@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'database_service.dart'; 
-import 'user_model.dart';
+import '../models/user_model.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -15,7 +15,6 @@ class AuthService {
 
   Future<User?> signInWithGoogle() async {
     try {
-      // FIX: Use the instantiated field _googleSignIn instead of GoogleSignIn.instance
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       
       if (googleUser == null) {
@@ -24,7 +23,6 @@ class AuthService {
       }
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
-        // Note: accessToken is technically required by the original code, but Firebase SDK can often infer it from the ID token if the client is configured correctly.
         idToken: googleAuth.idToken,
       );
       final UserCredential userCredential = await _auth.signInWithCredential(credential);
@@ -52,7 +50,6 @@ class AuthService {
   }
 
   Future<void> signOut() async {
-    // FIX: Use the instantiated field _googleSignIn
     await _googleSignIn.signOut();
     await _auth.signOut();
   }
@@ -88,7 +85,6 @@ class AuthService {
 
     } on FirebaseAuthException catch (e) {
       print('Firebase Sign-Up Error: ${e.code}');
-      // If the network issue is fixed, this should show specific errors like 'email-already-in-use'
       return null;
     } catch (e) {
       print('General Sign-Up Error: $e');

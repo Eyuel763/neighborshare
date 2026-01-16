@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../listing_model.dart';
-import '../listing_details_screen.dart';
+import '../models/listing_model.dart';
+import '../screens/listing_details_screen.dart';
 
 class ListingCard extends StatelessWidget {
   final ListingModel listing;
@@ -15,7 +15,6 @@ class ListingCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         contentPadding: const EdgeInsets.all(12),
-        // --- IMAGE / ICON SECTION ---
         leading: Container(
           width: 60,
           height: 60,
@@ -47,7 +46,6 @@ class ListingCard extends StatelessWidget {
                   size: 30,
                 ),
         ),
-        // --- TITLE & DESCRIPTION ---
         title: Text(
           listing.title,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
@@ -74,7 +72,6 @@ class ListingCard extends StatelessWidget {
             ),
           ],
         ),
-        // --- PRICE SECTION ---
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,

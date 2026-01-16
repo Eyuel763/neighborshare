@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'auth_service.dart';
-import 'add_listing_screen.dart';
-import 'database_service.dart';
-import 'listing_model.dart';
-import 'user_model.dart';
-import 'widgets/listing_card.dart';
+import '../services/auth_service.dart';
+import '../services/database_service.dart';
+import '../models/listing_model.dart';
+import '../models/user_model.dart';
+import '../widgets/listing_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,7 +15,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String _searchQuery = '';
-  String _selectedType = 'All'; // For filtering Tool/Skill
+  String _selectedType = 'All';
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +43,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
           return Column(
             children: [
-              // 🔍 Search Bar
               Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: TextField(
@@ -59,7 +57,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              // 🏷️ Filter Chips
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Row(
@@ -97,7 +94,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       return const Center(child: CircularProgressIndicator());
                     }
 
-                    // 🛠️ Local Filtering logic
                     final allListings = listingSnapshot.data ?? [];
                     final filteredListings = allListings.where((l) {
                       final matchesSearch = l.title.toLowerCase().contains(_searchQuery) || 
@@ -132,16 +128,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddListingScreen()),
-          );
-        },
-        label: const Text('Post'),
-        icon: const Icon(Icons.add),
       ),
     );
   }
