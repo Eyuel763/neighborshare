@@ -7,7 +7,11 @@ import '../models/request_model.dart';
 import '../models/message_model.dart';
 import '../models/review_model.dart';
 
+import '../models/role_request_model.dart';
+import '../models/user_role.dart';
+
 class DatabaseService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final CollectionReference usersCollection = FirebaseFirestore.instance
       .collection('users');
   final CollectionReference listingsCollection = FirebaseFirestore.instance
@@ -227,6 +231,53 @@ class DatabaseService {
     await usersCollection.doc(userId).update({
       'rating': average,
       'reviewCount': query.docs.length,
+    });
+  }
+
+    Future<void> submitRoleRequest({
+    required String requesterUid,
+    required String requesterEmail,
+    required UserRole requestedRole,
+    String? reason,
+  }) async {
+    final request = RoleRequestModel(
+      id: '',
+      requesterUid: requesterUid,
+      requesterEmail: requesterEmail,
+      requestedRole: requestedRole,
+      reason: reason,
+      createdAt: DateTime.now(),
+    );
+
+    await _firestore.collection('role_requests').add(request.toFirestore());
+  }
+
+    Stream<List<RoleRequestModel>> getPendingRoleRequests() {
+    return _firestore
+        .collection('role_requests')
+        .where('status', isEqualTo: 'pending')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => RoleRequestModel.fromFirestore(doc))
+            .toList());
+  }
+
+    Future<void> reviewRoleRequest({
+    required String requestId,
+    required String requesterUid,
+    required String adminUid,
+    required bool approve,
+  }) async {
+    // Client-side guard (also strictly enforced by Firestore Security Rules)
+    if (requesterUid == adminUid) {
+      throw Exception('Separation of Duties violation: Admins cannot approve their own role requests.');
+    }
+
+    await _firestore.collection('role_requests').doc(requestId).update({
+      'status': approve ? 'approved' : 'rejected',
+      'reviewedBy': adminUid,
+      'reviewedAt': FieldValue.serverTimestamp(),
     });
   }
 }

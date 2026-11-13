@@ -19,7 +19,22 @@ NeighborShare is a Flutter + Firebase mobile app for local sharing. It helps nei
 - Firebase Storage
 - Google Sign-In
 
-## Getting Started
+## Features
+
+- **Authentication** with Firebase Auth (email/password and Google sign-in).
+- **Profile setup** for city and sub-city to localize listings.
+- **Listings** for tools and skills with categories, pricing, and images.
+- **Nearby discovery** with search and type filters (Tool / Skill).
+- **Requests & activity** to track borrowing/service requests.
+- **In-app chat** between requester and owner.
+
+## Tech Stack
+
+- Flutter (Material 3)
+- Firebase Authentication
+- Cloud Firestore
+- Firebase Storage
+- Google Sign-In
 
 ### Prerequisites
 

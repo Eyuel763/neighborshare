@@ -53,3 +53,6 @@ firebase_options.dart
 .env
 *secret*
 *.pubignore
+
+# Node dependencies
+**/node_modules/

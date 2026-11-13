@@ -122,4 +122,14 @@ class AuthService {
       return null;
     }
   }
+
+    /// Reads the role from the custom claims in the Firebase ID token
+  Future<String?> getCurrentUserRoleClaim() async {
+    final User? currentUser = _auth.currentUser;
+    if (currentUser == null) return null;
+    
+    // Force refresh token to ensure we have the latest custom claims
+    final IdTokenResult tokenResult = await currentUser.getIdTokenResult(true);
+    return tokenResult.claims?['role'] as String?;
+  }
 }

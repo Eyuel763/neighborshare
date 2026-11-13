@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'user_role.dart';
 
 class UserModel {
   final String uid;
@@ -14,6 +15,8 @@ class UserModel {
   final double rating; 
   final int reviewCount;
 
+  final UserRole role;
+
   UserModel({
     required this.uid,
     required this.email,
@@ -26,6 +29,7 @@ class UserModel {
     this.isAddressVerified = false,
     this.rating = 0.0,    
     this.reviewCount = 0, 
+    this.role = UserRole.neighbor,
   });
 
   factory UserModel.fromFirestore(Map<String, dynamic> data) {
@@ -41,6 +45,7 @@ class UserModel {
       isAddressVerified: data['isAddressVerified'] as bool? ?? false,
       rating: (data['rating'] as num?)?.toDouble() ?? 0.0,
       reviewCount: (data['reviewCount'] as num?)?.toInt() ?? 0,
+      role: UserRole.fromString(data['role'] as String?),
     );
   }
 
@@ -53,6 +58,7 @@ class UserModel {
       'trustScore': trustScore,
       'rating': rating,     
       'reviewCount': reviewCount, 
+      'role': role.value,
     };
 
     if (name != null) data['name'] = name;
