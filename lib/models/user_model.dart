@@ -5,6 +5,7 @@ class UserModel {
   final String uid;
   final String email;
   final String? name;
+  final String? phoneNumber;
   final String? photoUrl;
   final double trustScore;
   final DateTime createdAt;
@@ -21,6 +22,7 @@ class UserModel {
     required this.uid,
     required this.email,
     this.name,
+    this.phoneNumber,
     this.photoUrl,
     this.trustScore = 5.0,
     required this.createdAt,
@@ -37,6 +39,7 @@ class UserModel {
       uid: data['uid'] as String,
       email: data['email'] as String,
       name: data['name'] as String?,
+      phoneNumber: data['phoneNumber'] as String?,
       photoUrl: data['photoUrl'] as String?,
       trustScore: (data['trustScore'] as num?)?.toDouble() ?? 5.0,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
@@ -62,6 +65,7 @@ class UserModel {
     };
 
     if (name != null) data['name'] = name;
+    if (phoneNumber != null) data['phoneNumber'] = phoneNumber;
     if (photoUrl != null) data['photoUrl'] = photoUrl;
     if (subcity != null) data['subcity'] = subcity;
     if (city != null) data['city'] = city;

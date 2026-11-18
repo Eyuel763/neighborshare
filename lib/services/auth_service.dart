@@ -54,10 +54,12 @@ class AuthService {
     await _auth.signOut();
   }
 
-  Future<User?> signUpWithEmailAndPassword({
+    Future<User?> signUpWithEmailAndPassword({
     required String email, 
     required String password,
     String? displayName,
+    String? phoneNumber,
+    String? subcity,
   }) async {
     try {
       final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
@@ -69,13 +71,18 @@ class AuthService {
 
       if (user != null) {
         if (displayName != null) {
-            await user.updateDisplayName(displayName);
+          await user.updateDisplayName(displayName);
         }
+
+        // Account Activation: Send Email Verification
+        await user.sendEmailVerification();
 
         final UserModel newUser = UserModel(
           uid: user.uid,
           email: user.email ?? '', 
           name: displayName,
+          phoneNumber: phoneNumber,
+          subcity: subcity,
           createdAt: DateTime.now(),
         );
 
@@ -131,5 +138,19 @@ class AuthService {
     // Force refresh token to ensure we have the latest custom claims
     final IdTokenResult tokenResult = await currentUser.getIdTokenResult(true);
     return tokenResult.claims?['role'] as String?;
+  }
+
+    /// Sends a password reset email with a short-lived reset token
+  Future<bool> sendPasswordResetEmail(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email.trim());
+      return true;
+    } on FirebaseAuthException catch (e) {
+      print('Password Reset Error: ${e.code} - ${e.message}');
+      return false;
+    } catch (e) {
+      print('General Password Reset Error: $e');
+      return false;
+    }
   }
 }

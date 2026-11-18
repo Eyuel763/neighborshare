@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import 'registration_screen.dart';
 import '../widgets/auth_widgets.dart';
+import '../services/biometric_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,6 +18,8 @@ class _LoginScreenState extends State<LoginScreen> {
   
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  final BiometricService _biometricService = BiometricService();
 
   void _submitEmailSignIn() async {
     if (_formKey.currentState!.validate()) {
@@ -35,6 +38,68 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       }
     }
+  }
+
+    void _showForgotPasswordDialog() {
+    final TextEditingController resetEmailController = TextEditingController(
+      text: _emailController.text.trim(),
+    );
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Reset Password"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Enter your registered email address to receive a secure password reset link.",
+              style: TextStyle(fontSize: 14, color: Colors.black54),
+            ),
+            const SizedBox(height: 15),
+            TextField(
+              controller: resetEmailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(
+                labelText: "Email Address",
+                prefixIcon: Icon(Icons.email_outlined),
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final email = resetEmailController.text.trim();
+              if (email.isEmpty) return;
+
+              Navigator.pop(ctx);
+              final success = await _authService.sendPasswordResetEmail(email);
+
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      success
+                          ? "If an account exists for $email, a secure reset link has been sent."
+                          : "Failed to send reset link. Please check the email and try again.",
+                    ),
+                    backgroundColor: success ? Colors.green : Colors.redAccent,
+                  ),
+                );
+              }
+            },
+            child: const Text("Send Link"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -106,6 +171,21 @@ class _LoginScreenState extends State<LoginScreen> {
                     
                     const SizedBox(height: 30),
 
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: _showForgotPasswordDialog,
+                        child: const Text(
+                          "Forgot Password?",
+                          style: TextStyle(
+                            color: Color(0xFF0052CC),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
                     SizedBox(
                       width: double.infinity,
                       height: 55,
@@ -143,7 +223,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 20),
                     
-                    TextButton(
+                                        TextButton(
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -154,6 +234,35 @@ class _LoginScreenState extends State<LoginScreen> {
                         "New user? Create an account",
                         style: TextStyle(color: Color(0xFF0052CC), fontWeight: FontWeight.bold),
                       ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Biometric Quick-Unlock Button
+                    IconButton(
+                      iconSize: 45,
+                      icon: const Icon(Icons.fingerprint, color: Color(0xFF0052CC)),
+                      tooltip: "Unlock with Biometrics",
+                      onPressed: () async {
+                        final available = await _biometricService.isBiometricAvailable();
+                        if (!available) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Biometrics not available or configured on this device.')),
+                            );
+                          }
+                          return;
+                        }
+                        final authenticated = await _biometricService.authenticateWithBiometrics();
+                        if (authenticated && mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Biometric authentication successful!'),
+                              backgroundColor: Colors.green,
+                            ),
+                          ),
+                        }
+                      },
                     ),
                   ],
                 ),

@@ -17,16 +17,21 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _subcityController = TextEditingController();
+
   void _submitRegistration() async {
     if (_formKey.currentState!.validate()) {
       final user = await _authService.signUpWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
         displayName: _nameController.text.trim(),
+        phoneNumber: _phoneController.text.trim(),
+        subcity: _subcityController.text.trim(),
       );
 
       if (user != null) {
-        print('Registration successful for: ${user.email}');
+        print('A verification email has been sent to your email address. Please verify your email before logging in.');
         if (mounted) Navigator.pop(context); 
       } else {
         if (mounted) {
@@ -43,6 +48,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _phoneController.dispose();
+    _subcityController.dispose();
     super.dispose();
   }
 
@@ -109,6 +116,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       label: "Password",
                       icon: Icons.lock_outline,
                       isPassword: true,
+                    ),
+                    buildAuthField(
+                      controller: _phoneController,
+                      label: "Phone Number",
+                      icon: Icons.phone_outlined,
+                    ),
+                    buildAuthField(
+                      controller: _subcityController,
+                      label: "Subcity (e.g., Bole, Yeka, Kirkos)",
+                      icon: Icons.location_city_outlined,
                     ),
                     
                     const SizedBox(height: 30),
