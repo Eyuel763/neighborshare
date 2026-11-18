@@ -99,34 +99,67 @@ class AuthService {
     }
   }
 
-  Future<User?> signInWithEmailAndPassword({
+Future<User?> signInWithEmailAndPassword({
     required String email, 
     required String password,
   }) async {
+    final sanitizedEmail = email.trim().toLowerCase().replaceAll(RegExp(r'[^\w\s]+'), '_');
+    final lockoutDocRef = FirebaseFirestore.instance.collection('account_lockouts').doc(sanitizedEmail);
     try {
+      // 1. Check existing lockout status before attempting sign in
+      final lockoutSnapshot = await lockoutDocRef.get();
+      if (lockoutSnapshot.exists) {
+        final data = lockoutSnapshot.data() as Map<String, dynamic>;
+        final Timestamp? lockoutUntil = data['lockoutUntil'] as Timestamp?;
+        if (lockoutUntil != null && lockoutUntil.toDate().isAfter(DateTime.now())) {
+          final remainingMinutes = lockoutUntil.toDate().difference(DateTime.now()).inMinutes + 1;
+          throw FirebaseAuthException(
+            code: 'account-locked',
+            message: 'Account temporarily locked due to 5 consecutive failed attempts. Please try again in $remainingMinutes minute(s).',
+          );
+        }
+      }
+      // 2. Attempt Authentication via Firebase Auth
       final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: email,
+        email: email.trim(),
         password: password,
       );
       
       final User? user = userCredential.user;
-      return user;
-
-    } on FirebaseAuthException catch (e) {
-      print('Firebase Sign-In Error: ${e.code}');
-      String message;
-      if (e.code == 'user-not-found') {
-        message = 'No user found for that email.';
-      } else if (e.code == 'wrong-password') {
-        message = 'Wrong password provided for that user.';
-      } else {
-        message = 'Login failed. Please check your credentials.';
+      // 3. Reset failed attempts counter on successful login
+      if (user != null) {
+        await lockoutDocRef.set({
+          'failedAttempts': 0,
+          'lockoutUntil': null,
+          'lastSuccessfulLogin': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
       }
-      print(message);
-      return null;
-    } catch (e) {
-      print('General Sign-In Error: $e');
-      return null;
+      return user;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'account-locked') {
+        rethrow;
+      }
+      // 4. Increment failed attempts on failed login (wrong-password, user-not-found, etc.)
+      final lockoutSnapshot = await lockoutDocRef.get();
+      int currentAttempts = 0;
+      if (lockoutSnapshot.exists) {
+        currentAttempts = (lockoutSnapshot.data() as Map<String, dynamic>)['failedAttempts'] ?? 0;
+      }
+      currentAttempts += 1;
+      final bool shouldLock = currentAttempts >= 5;
+      final DateTime? lockUntil = shouldLock ? DateTime.now().add(const Duration(minutes: 15)) : null;
+      await lockoutDocRef.set({
+        'failedAttempts': currentAttempts,
+        'lockoutUntil': lockUntil != null ? Timestamp.fromDate(lockUntil) : null,
+        'lastFailedAttempt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      if (shouldLock) {
+        throw FirebaseAuthException(
+          code: 'account-locked',
+          message: 'Account temporarily locked due to 5 consecutive failed attempts. Please try again in 15 minutes.',
+        );
+      }
+      rethrow;
     }
   }
 

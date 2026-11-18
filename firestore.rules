@@ -51,5 +51,10 @@ service cloud.firestore {
       // Immutable from client SDK: logs can only be created via server/Cloud Functions
       allow write: if false;
     }
+
+    match /account_lockouts/{emailId} {
+      // Allow read and write for rate limiting / lockout enforcement
+      allow read, write: if true;
+    }
   }
 }

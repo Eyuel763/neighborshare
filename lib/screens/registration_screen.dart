@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../widgets/auth_widgets.dart';
+import '../utils/security_validator.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -21,6 +22,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final TextEditingController _subcityController = TextEditingController();
 
   void _submitRegistration() async {
+    // 1. Password Policy Check
+    final passwordError = SecurityValidator.validatePassword(_passwordController.text);
+    if (passwordError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(passwordError),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
     if (_formKey.currentState!.validate()) {
       final user = await _authService.signUpWithEmailAndPassword(
         email: _emailController.text.trim(),

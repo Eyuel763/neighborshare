@@ -21,19 +21,33 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final BiometricService _biometricService = BiometricService();
 
-  void _submitEmailSignIn() async {
+void _submitEmailSignIn() async {
     if (_formKey.currentState!.validate()) {
-      final user = await _authService.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
-
-      if (user != null) {
-        print('Email sign-in successful for: ${user.email}');
-      } else {
+      try {
+        final user = await _authService.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+        if (user != null && mounted) {
+          // Navigation handled by auth guard
+        }
+      } on FirebaseAuthException catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Login Failed. Check your email and password.')),
+            SnackBar(
+              content: Text(e.message ?? 'Authentication failed.'),
+              backgroundColor: Colors.redAccent,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('An unexpected error occurred. Please try again.'),
+              backgroundColor: Colors.redAccent,
+            ),
           );
         }
       }
